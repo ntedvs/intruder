@@ -1,23 +1,15 @@
 #!/bin/bash
 
-matrix_rain() { echo "while true; do cat /dev/urandom | tr -dc 'A-Za-z0-9' | fold -w \$(tput cols) | head -n 20; sleep 0.3; done"; }
-port_scanning() { echo "while true; do echo 'Scanning port \$((RANDOM % 65535)) on 192.168.\$((RANDOM % 255)).\$((RANDOM % 255))'; sleep 0.5; done"; }
-code_dump() { echo "while true; do echo 'int main() { printf(\"Hello World %d\", \$((RANDOM % 1000))); }'; sleep 1; done"; }
-system_stats() { echo "while true; do echo \"CPU: \$((RANDOM % 100))% MEM: \$((RANDOM % 100))% DISK: \$((RANDOM % 100))%\"; sleep 1; done"; }
+calc=$(($(tput cols) / 40 * $(tput lines) / 10))
+panes=$((calc > 16 ? 16 : calc))
 
-tmux new-session -d -s hollywood /bin/bash
+tmux new -d -s intruder /bin/bash
 tmux set-option -g default-shell /bin/bash
 tmux set-option status off
 
-tmux split-window -v
-tmux select-pane -t 0
-tmux split-window -h
-tmux select-pane -t 2
-tmux split-window -h
+for ((i = 1; i < panes; i++)); do
+  tmux split-window -t intruder
+  tmux select-layout -t intruder tiled
+done
 
-tmux send-keys -t 0 "$(matrix_rain)" C-m
-tmux send-keys -t 1 "$(port_scanning)" C-m
-tmux send-keys -t 2 "$(code_dump)" C-m
-tmux send-keys -t 3 "$(system_stats)" C-m
-
-tmux attach-session -t hollywood
+tmux attach -t intruder
